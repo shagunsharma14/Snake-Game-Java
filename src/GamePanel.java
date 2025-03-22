@@ -8,22 +8,26 @@ public class GamePanel extends JPanel implements ActionListener {
     static final int SCREEN_HEIGHT = 600;
     static final int UNIT_SIZE = 25;
     static final int GAME_UNITS = (SCREEN_WIDTH * SCREEN_HEIGHT) / UNIT_SIZE;
-    static final int INITIAL_DELAY = 75; // Initial speed
-    static final int SPEED_INCREMENT = 5; // Reduce delay by this value
-    static final int MIN_DELAY = 30; // Minimum speed threshold
+    static final int INITIAL_DELAY = 75;
+    static final int SPEED_INCREMENT = 5;
+    static final int MIN_DELAY = 30;
 
     final int x[] = new int[GAME_UNITS];
     final int y[] = new int[GAME_UNITS];
     int bodyParts = 6;
     int applesEaten;
-    int appleX;
-    int appleY;
+    int appleX, appleY;
     char direction = 'R';
     boolean running = false;
     Timer timer;
     Random random;
     boolean borderlessMode = false;
     int currentDelay = INITIAL_DELAY;
+
+    // Golden Apple Properties
+    boolean goldenAppleActive = false;
+    int goldenAppleX, goldenAppleY;
+    int goldenAppleTimer = 0;
 
     GamePanel() {
         random = new Random();
@@ -49,8 +53,15 @@ public class GamePanel extends JPanel implements ActionListener {
 
     public void draw(Graphics g) {
         if (running) {
-            g.setColor(Color.red);
+            // Draw red apple
+            g.setColor(Color.RED);
             g.fillOval(appleX, appleY, UNIT_SIZE, UNIT_SIZE);
+
+            // Draw golden apple if active
+            if (goldenAppleActive) {
+                g.setColor(Color.YELLOW);
+                g.fillOval(goldenAppleX, goldenAppleY, UNIT_SIZE, UNIT_SIZE);
+            }
 
             for (int i = 0; i < bodyParts; i++) {
                 if (i == 0) {
@@ -78,6 +89,18 @@ public class GamePanel extends JPanel implements ActionListener {
     public void newApple() {
         appleX = random.nextInt((int) (SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
         appleY = random.nextInt((int) (SCREEN_HEIGHT / UNIT_SIZE)) * UNIT_SIZE;
+
+        // Spawn golden apple every 5 apples
+        if (applesEaten % 5 == 0 && applesEaten > 0) {
+            spawnGoldenApple();
+        }
+    }
+
+    public void spawnGoldenApple() {
+        goldenAppleX = random.nextInt((int) (SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
+        goldenAppleY = random.nextInt((int) (SCREEN_HEIGHT / UNIT_SIZE)) * UNIT_SIZE;
+        goldenAppleActive = true;
+        goldenAppleTimer = 50; // Golden apple disappears after 10 frames
     }
 
     public void move() {
@@ -104,12 +127,15 @@ public class GamePanel extends JPanel implements ActionListener {
             bodyParts++;
             applesEaten++;
             newApple();
-
-            // Increase speed every 5 apples
-            if (applesEaten % 5 == 0 && currentDelay > MIN_DELAY) {
-                currentDelay -= SPEED_INCREMENT;
+        }
+        // Check if player eats golden apple
+        if (goldenAppleActive && (x[0] == goldenAppleX) && (y[0] == goldenAppleY)) {
+            applesEaten += 5; // Extra points
+            if (currentDelay > MIN_DELAY) {
+                currentDelay -= SPEED_INCREMENT; // Increase speed
                 timer.setDelay(currentDelay);
             }
+            goldenAppleActive = false; // Remove golden apple
         }
     }
 
@@ -150,6 +176,14 @@ public class GamePanel extends JPanel implements ActionListener {
             move();
             checkApple();
             checkCollisions();
+
+            // Handle golden apple disappearance
+            if (goldenAppleActive) {
+                goldenAppleTimer--;
+                if (goldenAppleTimer <= 0) {
+                    goldenAppleActive = false;
+                }
+            }
         }
         repaint();
     }
@@ -161,6 +195,7 @@ public class GamePanel extends JPanel implements ActionListener {
         running = true;
         currentDelay = INITIAL_DELAY;
         timer.setDelay(currentDelay);
+        goldenAppleActive = false;
 
         for (int i = 0; i < bodyParts; i++) {
             x[i] = 50 - (i * UNIT_SIZE);
