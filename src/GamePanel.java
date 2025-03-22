@@ -8,7 +8,10 @@ public class GamePanel extends JPanel implements ActionListener {
     static final int SCREEN_HEIGHT = 600;
     static final int UNIT_SIZE = 25;
     static final int GAME_UNITS = (SCREEN_WIDTH * SCREEN_HEIGHT) / UNIT_SIZE;
-    static final int DELAY = 75;
+    static final int INITIAL_DELAY = 75; // Initial speed
+    static final int SPEED_INCREMENT = 5; // Reduce delay by this value
+    static final int MIN_DELAY = 30; // Minimum speed threshold
+
     final int x[] = new int[GAME_UNITS];
     final int y[] = new int[GAME_UNITS];
     int bodyParts = 6;
@@ -20,6 +23,7 @@ public class GamePanel extends JPanel implements ActionListener {
     Timer timer;
     Random random;
     boolean borderlessMode = false;
+    int currentDelay = INITIAL_DELAY;
 
     GamePanel() {
         random = new Random();
@@ -33,7 +37,8 @@ public class GamePanel extends JPanel implements ActionListener {
     public void startGame() {
         newApple();
         running = true;
-        timer = new Timer(DELAY, this);
+        currentDelay = INITIAL_DELAY;
+        timer = new Timer(currentDelay, this);
         timer.start();
     }
 
@@ -99,6 +104,12 @@ public class GamePanel extends JPanel implements ActionListener {
             bodyParts++;
             applesEaten++;
             newApple();
+
+            // Increase speed every 5 apples
+            if (applesEaten % 5 == 0 && currentDelay > MIN_DELAY) {
+                currentDelay -= SPEED_INCREMENT;
+                timer.setDelay(currentDelay);
+            }
         }
     }
 
@@ -148,6 +159,9 @@ public class GamePanel extends JPanel implements ActionListener {
         applesEaten = 0;
         direction = 'R';
         running = true;
+        currentDelay = INITIAL_DELAY;
+        timer.setDelay(currentDelay);
+
         for (int i = 0; i < bodyParts; i++) {
             x[i] = 50 - (i * UNIT_SIZE);
             y[i] = 50;
