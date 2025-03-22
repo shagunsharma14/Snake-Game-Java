@@ -19,6 +19,7 @@ public class GamePanel extends JPanel implements ActionListener {
     boolean running = false;
     Timer timer;
     Random random;
+    boolean borderlessMode = false;
 
     GamePanel(){
         random = new Random();
@@ -91,7 +92,19 @@ public class GamePanel extends JPanel implements ActionListener {
                 x[0] = x[0] + UNIT_SIZE;
                 break;
         }
-
+        // Apply borderless mode if enabled
+        if (borderlessMode) {
+            if (x[0] < 0) {
+                x[0] = SCREEN_WIDTH - UNIT_SIZE;
+            } else if (x[0] >= SCREEN_WIDTH) {
+                x[0] = 0;
+            }
+            if (y[0] < 0) {
+                y[0] = SCREEN_HEIGHT - UNIT_SIZE;
+            } else if (y[0] >= SCREEN_HEIGHT) {
+                y[0] = 0;
+            }
+        }
     }
     public void checkApple(){
         if((x[0] == appleX) && (y[0] == appleY)){
@@ -202,6 +215,9 @@ public class GamePanel extends JPanel implements ActionListener {
                     if (!running) {
                         restartGame();
                     }
+                    break;
+                case KeyEvent.VK_B: // Toggle borderless mode
+                    borderlessMode = !borderlessMode;
                     break;
             }
         }
