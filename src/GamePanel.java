@@ -55,7 +55,7 @@ public class GamePanel extends JPanel implements ActionListener {
                 }
                 else{
                     g.setColor(new Color(45, 180, 0));
-                    g.setColor(new Color(random.nextInt(255), random.nextInt(255), random.nextInt(255)));//multiColor snake
+//                    g.setColor(new Color(random.nextInt(255), random.nextInt(255), random.nextInt(255)));//multiColor snake
                     g.fillRect(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
                 }
             }
@@ -140,6 +140,11 @@ public class GamePanel extends JPanel implements ActionListener {
         g.setFont(new Font("Int Free",Font.BOLD, 75));
         FontMetrics metrics2 = getFontMetrics(g.getFont());
         g.drawString("Game Over", (SCREEN_WIDTH - metrics2.stringWidth("Game Over"))/2,SCREEN_HEIGHT/2);
+
+        // Restart Instructions
+        g.setFont(new Font("Int Free", Font.BOLD, 30));
+        FontMetrics metrics3 = getFontMetrics(g.getFont());
+        g.drawString("Press R to Restart", (SCREEN_WIDTH - metrics3.stringWidth("Press R to Restart"))/2, SCREEN_HEIGHT/2 + 50);
     }
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -148,6 +153,22 @@ public class GamePanel extends JPanel implements ActionListener {
             checkApple();
             checkCollisions();
         }
+        repaint();
+    }
+    public void restartGame() {
+        bodyParts = 6;
+        applesEaten = 0;
+        direction = 'R';
+        running = true;
+
+        // Reset snake position
+        for (int i = 0; i < bodyParts; i++) {
+            x[i] = 50 - (i * UNIT_SIZE);
+            y[i] = 50;
+        }
+
+        newApple();
+        timer.start();
         repaint();
     }
     public class MyKeyAdapter extends KeyAdapter{
@@ -175,6 +196,11 @@ public class GamePanel extends JPanel implements ActionListener {
                 case KeyEvent.VK_DOWN:
                     if(direction!='U'){
                         direction = 'D';
+                    }
+                    break;
+                case KeyEvent.VK_R: // Restart game when 'R' is pressed
+                    if (!running) {
+                        restartGame();
                     }
                     break;
             }
